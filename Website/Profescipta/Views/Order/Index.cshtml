@@ -1,0 +1,40 @@
+﻿@model List<App.Domain.SoOrder>
+@{
+}
+<div>
+    <div>
+        <a asp-action="Add" asp-controller="Order" class="btn btn-primary">Add Sales Order</a>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Action</th>
+                    <th scope="col">Sales Order No</th>
+                    <th scope="col">Order Date</th>
+                    <th scope="col">Customer</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(Model != null)
+                {
+                    @foreach (App.Domain.SoOrder item in Model)
+                    {
+                        <tr>
+                            <th scope="row">
+                                <a class="btn btn-success" asp-action="Edit" asp-controller="Customers" asp-route-id="@item.ComCustomerId">Edit</a>
+                                <a class="btn btn-danger" asp-action="Delete" asp-controller="Customers" asp-route-id="@item.ComCustomerId">delete</a>
+                            </th>
+                            <td>@item.OrderNo</td>
+                            <td>@item.OrderDate</td>
+                            <td>@item._ComCustomerName</td>
+                        </tr>
+                    }
+                }
+                else{
+                    <tr>
+                        <td colspan="4">no data</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
