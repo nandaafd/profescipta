@@ -1,6 +1,7 @@
 ﻿using App.Domain;
 using App.Repository;
 using Entities.ViewModels;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,24 +14,63 @@ namespace Services
     {
         List<SoOrder> GetList(VMMasterSearchForm crit);
         VMOrderRequest Store(VMOrderRequest request);
+        SoOrder? GetId(int id);
+        List<SoItem>? GetItem(int orderId);
+        VMOrderRequest Update(VMOrderRequest request);
     }
     public class OrderService : IOrderService
     {
         private readonly IRepository<SoOrder> _order;
         private readonly IRepository<SoItem> _item;
-        public OrderService(IRepository<SoOrder> order, IRepository<SoItem> item)
+        private readonly IRepository<ComCustomer> _cust;
+        public OrderService(
+            IRepository<SoOrder> order, 
+            IRepository<SoItem> item,
+            IRepository<ComCustomer> cust)
         {
             _item = item;
+            _cust = cust;
             _order = order;
         }
         public List<SoOrder> GetList(VMMasterSearchForm crit)
         {
-            var list = _order.TableNoTracking.ToList();
+            var table = _order.TableNoTracking;
+            var custTable = _cust.TableNoTracking;
+            var list = (from o in table
+                       join p in custTable on o.ComCustomerId equals p.ComCustomerId
+                       select new SoOrder()
+                       {
+                           SoOrderId = o.SoOrderId,
+                           OrderNo = o.OrderNo,
+                           OrderDate = o.OrderDate,
+                           Address = o.Address,
+                           ComCustomerId = o.ComCustomerId,
+                           _ComCustomerName = p.CustomerName
+                       }).ToList();
+            if (crit.searchDate != null)
+            {
+                list.Where(w => w.OrderDate == crit.searchDate).ToList();
+            }
+            if (!crit.searchText.IsNullOrEmpty())
+            {
+                list.Where(w => w.OrderNo.ToUpper().Contains(crit.searchText.ToUpper().Trim())).ToList();
+            }
+
+            return list;
+        }
+        public SoOrder? GetId(int id)
+        {
+            var data = _order.TableNoTracking.Where(w => w.SoOrderId == id).FirstOrDefault();
+            return data != null ? data : null;
+        }
+        public List<SoItem>? GetItem(int orderId)
+        {
+            var list = _item.TableNoTracking.Where(w => w.SoOrderId == orderId).ToList();
             return list;
         }
         public VMOrderRequest Store(VMOrderRequest request)
         {
-            if (request != null) 
+            if (request != null && request.Items.Count > 0) 
             {
                 SoOrder data = new SoOrder();
                 data.OrderNo = "";
@@ -41,7 +81,6 @@ namespace Services
 
                 data.OrderNo = $"ORD-00{addData.SoOrderId}-{DateTime.Today.ToString("ddMMyyyy")}";
                 _order.Update(data);
-                _order.SaveChangesAsync();
 
                 if (request.Items.Count > 0)
                 {
@@ -54,10 +93,47 @@ namespace Services
                         itemData.Quantity = l.Qty;
                         itemData.Price = Convert.ToInt32(l.Price);
                         _item.Add(itemData);
-                        _item.SaveChangesAsync();
                     }
                     
                 }
+                _order.SaveChangesAsync();
+                _item.SaveChangesAsync();
+            }
+            else
+            {
+                
+            }
+            return request;
+        }
+        public VMOrderRequest Update(VMOrderRequest request)
+        {
+            if (request != null && request.Items.Count > 0)
+            {
+                var order = new SoOrder()
+                {
+                    SoOrderId = request.SoOrderId ?? 0,
+                    OrderNo = request.OrderNo,
+                    OrderDate = request.OrderDate,
+                    ComCustomerId = Convert.ToInt32(request.ComCustomerId),
+                    Address = request.Address
+                };
+                _order.Update(order);
+                if (request.Items.Count > 0)
+                {
+                    List<VMOrderItemDto> itemList = request.Items;
+                    foreach (VMOrderItemDto l in itemList)
+                    {
+                        SoItem itemData = new SoItem();
+                        itemData.ItemName = l.Name;
+                        itemData.SoOrderId = l.ItemId ?? 0;
+                        itemData.Quantity = l.Qty;
+                        itemData.Price = Convert.ToInt32(l.Price);
+                        _item.Update(itemData);
+                    }
+
+                }
+                _item.SaveChangesAsync();
+                _order.SaveChangesAsync();
             }
             return request;
         }

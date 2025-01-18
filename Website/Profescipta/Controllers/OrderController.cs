@@ -18,7 +18,9 @@ namespace Profescipta.Controllers
         }
         public IActionResult Index()
         {
-            return View();
+            VMMasterSearchForm crit = new VMMasterSearchForm();
+            var model = _orderService.GetList(crit);
+            return View(model);
         }
         public async Task<IActionResult> Add()
         {
@@ -27,6 +29,15 @@ namespace Profescipta.Controllers
             var model = new SoOrder();
             return View(model);
         }
+        public async Task<IActionResult> Edit(int id)
+        {
+            var crit = new VMMasterSearchForm();
+            ViewData["Cust"] = await _customerService.GetList(crit);
+            var model = _orderService.GetId(id);
+            ViewData["ItemList"] = _orderService.GetItem(id);
+            return View("Edit", model);
+        }
+        [HttpPost]
         public IActionResult Store([FromBody] VMOrderRequest request)
         {
             if (request == null || string.IsNullOrEmpty(request.ComCustomerId) || !request.Items.Any())
@@ -43,6 +54,24 @@ namespace Profescipta.Controllers
                 return RedirectToAction("Index");
             }
         }
+        [HttpPost]
+        public IActionResult Update([FromBody] VMOrderRequest request)
+        {
+            if (request == null || string.IsNullOrEmpty(request.ComCustomerId) || !request.Items.Any())
+            {
+                return BadRequest("Invalid data.");
+            }
+            var process = _orderService.Update(request);
+            if (process == null)
+            {
+                return BadRequest("Update data failed.");
+            }
+            else
+            {
+                return RedirectToAction("Index");
+            }
+        }
+
 
     }
 }

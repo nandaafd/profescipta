@@ -20,11 +20,11 @@
                     {
                         <tr>
                             <th scope="row">
-                                <a class="btn btn-success" asp-action="Edit" asp-controller="Customers" asp-route-id="@item.ComCustomerId">Edit</a>
-                                <a class="btn btn-danger" asp-action="Delete" asp-controller="Customers" asp-route-id="@item.ComCustomerId">delete</a>
+                                <a class="btn btn-success" asp-action="Edit" asp-controller="Order" asp-route-id="@item.SoOrderId">Edit</a>
+                                <a class="btn btn-danger" asp-action="Delete" asp-controller="Order" asp-route-id="@item.SoOrderId">delete</a>
                             </th>
                             <td>@item.OrderNo</td>
-                            <td>@item.OrderDate</td>
+                            <td>@item.OrderDate.ToString("dd-MMM-yyyy")</td>
                             <td>@item._ComCustomerName</td>
                         </tr>
                     }

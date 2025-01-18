@@ -8,7 +8,8 @@ namespace App.Domain
 {
     public class VMMasterSearchForm
     {
-        public string searchText {  get; set; }
-        public int searchId { get; set; }
+        public string? searchText {  get; set; }
+        public int? searchId { get; set; }
+        public DateTime? searchDate { get; set; }
     }
 }

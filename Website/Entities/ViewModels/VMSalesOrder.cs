@@ -8,6 +8,7 @@ namespace Entities.ViewModels
 {
     public class VMOrderRequest
     {
+        public int? SoOrderId { get; set; }
         public string OrderNo { get; set; }
         public DateTime OrderDate { get; set; }
         public string ComCustomerId { get; set; }
@@ -17,6 +18,7 @@ namespace Entities.ViewModels
 
     public class VMOrderItemDto
     {
+        public int? ItemId { get; set; }
         public string Name { get; set; }
         public int Qty { get; set; }
         public decimal Price { get; set; }
