@@ -199,6 +199,67 @@
                 $(this).find("td:first-child").text(index + 1);
             });
         }
+
+        $("#btnSave").on("click", function () {
+
+            let orderId = $("input[name='SoOrderId']").val();
+            let orderNo = $("input[name='OrderNo']").val();
+            let orderDate = $("input[name='OrderDate']").val();
+            let comCustomerId = $("select[name='ComCustomerId']").val();
+            let address = $("textarea[name='Address']").val();
+
+
+            if (!orderDate || !comCustomerId) {
+                alert("Order Date and Customer are required.");
+                return;
+            }
+
+
+            let items = [];
+            $("#tblItem tbody tr").each(function () {
+
+                const itemName = $(this).find("td:nth-child(2)").text();
+                const itemQty = $(this).find("td:nth-child(3)").text();
+                const itemPrice = $(this).find("td:nth-child(4)").text();
+                const itemTotal = $(this).find("td:nth-child(5)").text();
+                const itemId = $(this).find("td:nth-child(6)").text();
+                console.log("id" + itemId);
+                items.push({
+                    ItemId:parseInt(itemId),
+                    Name: itemName,
+                    Qty: parseInt(itemQty),
+                    Price: parseFloat(itemPrice),
+                    Total: parseFloat(itemTotal)
+                });
+            });
+
+            if (items.length === 0) {
+                alert("No items to save!");
+                return;
+            }
+
+
+            $.ajax({
+                url: '/Order/Update',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    SoOrderId: orderId,
+                    OrderNo: orderNo,
+                    OrderDate: orderDate,
+                    ComCustomerId: comCustomerId,
+                    Address: address,
+                    Items: items
+                }),
+                success: function (response) {
+                    alert("Order saved successfully!");
+                    location.replace("/Order");
+                },
+                error: function (xhr) {
+                    alert("Failed to save order: " + xhr.responseText);
+                }
+            });
+        });
     });
 
 

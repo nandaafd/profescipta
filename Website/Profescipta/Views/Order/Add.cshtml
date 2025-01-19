@@ -210,7 +210,7 @@
                 }),
                 success: function (response) {
                     alert("Order saved successfully!");
-                    location.reload(); 
+                    location.replace("/Order"); 
                 },
                 error: function (xhr) {
                     alert("Failed to save order: " + xhr.responseText);

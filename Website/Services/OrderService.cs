@@ -30,11 +30,13 @@ namespace Services
         public OrderService(
             IRepository<SoOrder> order, 
             IRepository<SoItem> item,
-            IRepository<ComCustomer> cust)
+            IRepository<ComCustomer> cust,
+            EfDbContext dbContext)
         {
             _item = item;
             _cust = cust;
             _order = order;
+            _dbContext = dbContext;
         }
         public List<SoOrder> GetList(VMMasterSearchForm crit)
         {
