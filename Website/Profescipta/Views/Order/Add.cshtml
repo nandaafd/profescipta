@@ -76,10 +76,10 @@
                         <label for="exampleInputPassword1" class="form-label">Price</label>
                         <input type="number" name="Price" class="form-control" id="Price">
                     </div>
-                    <button type="submit" class="btn btn-primary">Add</button>
                 </form>
             </div>
             <div class="modal-footer">
+                <button type="submit" class="btn btn-primary" id="btnAdd">Add</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -88,7 +88,7 @@
 
 <script>
         $(document).ready(function () {
-        $("#modalItem button[type='submit']").on("click", function (e) {
+        $("#modalItem #btnAdd").on("click", function (e) {
             e.preventDefault(); 
 
             const itemName = $("#Item").val();

@@ -55,6 +55,7 @@
                     <th>Qty</th>
                     <th>Price</th>
                     <th>Total</th>
+                    <th>Id</th>
                 </tr>
             </thead>
             <tbody>
@@ -68,7 +69,7 @@
                         <td>@l.ItemName</td>
                         <td>@l.Quantity</td>
                         <td>@l.Price</td>
-                        <td></td>
+                        <td>@(l.Price * l.Quantity)</td>
                         <td>@l.SoItemId</td>
                     </tr>
                 }
@@ -100,11 +101,11 @@
                         <label for="exampleInputPassword1" class="form-label">Price</label>
                         <input type="number" name="Price" class="form-control" id="Price">
                     </div>
-                    <input name="ItemId" id="ItemId"/>
-                    <button type="submit" class="btn btn-primary">Add</button>
+                    <input hidden name="ItemId" id="ItemId"/>
                 </form>
             </div>
             <div class="modal-footer">
+                <button type="submit" class="btn btn-primary" id="saveBtn">Save</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -112,158 +113,94 @@
 </div>
 
 <script>
-    $(document).ready(function () {
+        $(document).ready(function () {
+        $("#modalItem #saveBtn").on("click", function (e) {
+            e.preventDefault();
 
-            $("#modalItem button[type='submit']").on("click", function (e) {
-        e.preventDefault();
+            const itemName = $("#Item").val();
+            const itemQty = $("#Qty").val();
+            const itemPrice = $("#Price").val();
+            const itemId = $("#ItemId").val();
 
-        const itemName = $("#Item").val();
-        const itemQty = $("#Qty").val();
-        const itemPrice = $("#Price").val();
-        const itemId = $("#ItemId").val();
+            if (!itemName || !itemQty || !itemPrice) {
+                alert("All fields are required!");
+                return;
+            }
 
-        if (!itemName || !itemQty || !itemPrice) {
-            alert("All fields are required!");
-            return;
-        }
+            const itemTotal = parseFloat(itemQty) * parseFloat(itemPrice);
 
-        const itemTotal = parseFloat(itemQty) * parseFloat(itemPrice);
-
-        const editingRow = $("#modalItem").data("editingRow");
-        if (editingRow) {
-            editingRow.find("td:nth-child(2)").text(itemName);
-            editingRow.find("td:nth-child(3)").text(itemQty);
-            editingRow.find("td:nth-child(4)").text(itemPrice);
-            editingRow.find("td:nth-child(5)").text(itemTotal.toFixed(2));
-            editingRow.find("input[name='ItemId']").val(itemId);
-            $("#modalItem").removeData("editingRow");
-        } else {
-            const newRow = `
-                <tr>
-                    <td></td>
+            const editingRow = $("#modalItem").data("editingRow");
+            if (editingRow) {
+                editingRow.html(`
+                    <td>
+                        <button type="button" class="btn btn-warning btn-sm btn-edit">Edit</button>
+                        <button type="button" class="btn btn-danger btn-sm btn-delete">Delete</button>
+                    </td>
                     <td>${itemName}</td>
                     <td>${itemQty}</td>
                     <td>${itemPrice}</td>
                     <td>${itemTotal.toFixed(2)}</td>
-                    <td>
-                        <input type="hidden" name="ItemId" value="${itemId}" />
-                        <button type="button" class="btn btn-warning btn-sm btn-edit">Edit</button>
-                        <button type="button" class="btn btn-danger btn-sm btn-delete">Delete</button>
-                    </td>
-                </tr>
-            `;
-            $("#tblItem tbody").append(newRow);
-        }
+                    <td>${itemId}</td>
+                `);
+                $("#modalItem").removeData("editingRow");
+            } else {
+                const newRow = `
+                    <tr>
+                        <td>
+                            <button type="button" class="btn btn-warning btn-sm btn-edit">Edit</button>
+                            <button type="button" class="btn btn-danger btn-sm btn-delete">Delete</button>
+                        </td>
+                        <td>${itemName}</td>
+                        <td>${itemQty}</td>
+                        <td>${itemPrice}</td>
+                        <td>${itemTotal.toFixed(2)}</td>
+                        <td>${itemId}</td>
+                    </tr>
+                `;
+                $("#tblItem tbody").append(newRow);
+            }
 
-        $("#Item").val("");
-        $("#Qty").val("");
-        $("#Price").val("");
-        $("#ItemId").val("");
-        $("#modalItem").modal("hide");
-        renumberTable();
-    });
+            $("#Item").val("");
+            $("#Qty").val("");
+            $("#Price").val("");
+            $("#ItemId").val("");
 
+            $("#modalItem").modal("hide");
 
-        
+            //renumberTable();
+        });
+
         $(document).on("click", ".btn-edit", function () {
             const row = $(this).closest("tr");
 
-            
             const itemId = row.find("td:nth-child(6)").text();
             const itemName = row.find("td:nth-child(2)").text();
             const itemQty = row.find("td:nth-child(3)").text();
             const itemPrice = row.find("td:nth-child(4)").text();
 
-            console.log(itemId + "id")
-            
             $("#Item").val(itemName);
             $("#ItemId").val(itemId);
             $("#Qty").val(itemQty);
             $("#Price").val(itemPrice);
 
-            
             $("#modalItem").data("editingRow", row);
 
-            
             $("#modalItem").modal("show");
         });
 
-        
         $(document).on("click", ".btn-delete", function () {
             const row = $(this).closest("tr");
-            row.remove(); 
-            renumberTable(); 
+            row.remove();
+            renumberTable();
         });
 
-       
         function renumberTable() {
             $("#tblItem tbody tr").each(function (index) {
                 $(this).find("td:first-child").text(index + 1);
             });
         }
-
-       
-        $("#btnSave").on("click", function () {
-            
-            let orderId = $("input[name='SoOrderId']").val();
-            let orderNo = $("input[name='OrderNo']").val();
-            let orderDate = $("input[name='OrderDate']").val();
-            let comCustomerId = $("select[name='ComCustomerId']").val();
-            let address = $("textarea[name='Address']").val();
-
-           
-            if (!orderDate || !comCustomerId) {
-                alert("Order Date and Customer are required.");
-                return;
-            }
-
-           
-            let items = [];
-            $("#tblItem tbody tr").each(function () {
-                
-                const itemName = $(this).find("td:nth-child(2)").text();
-                const itemQty = $(this).find("td:nth-child(3)").text();
-                const itemPrice = $(this).find("td:nth-child(4)").text();
-                const itemTotal = $(this).find("td:nth-child(5)").text();
-                const itemId = $(this).find("td:nth-child(6)").text();
-                console.log("id" + itemId);
-                items.push({
-                    ItemId:parseInt(itemId),
-                    Name: itemName,
-                    Qty: parseInt(itemQty),
-                    Price: parseFloat(itemPrice),
-                    Total: parseFloat(itemTotal)
-                });
-            });
-
-            if (items.length === 0) {
-                alert("No items to save!");
-                return;
-            }
-
-          
-            $.ajax({
-                url: '/Order/Update', 
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    SoOrderId: orderId,
-                    OrderNo: orderNo,
-                    OrderDate: orderDate,
-                    ComCustomerId: comCustomerId,
-                    Address: address,
-                    Items: items
-                }),
-                success: function (response) {
-                    alert("Order saved successfully!");
-                    location.reload(); 
-                },
-                error: function (xhr) {
-                    alert("Failed to save order: " + xhr.responseText);
-                }
-            });
-        });
     });
+
 
 </script>
 
