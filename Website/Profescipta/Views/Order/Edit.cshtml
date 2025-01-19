@@ -112,29 +112,29 @@
 
 <script>
     $(document).ready(function () {
-        // Event handler untuk tombol submit di modal (Tambah/Edit Item)
+        
         $("#modalItem button[type='submit']").on("click", function (e) {
-            e.preventDefault(); // Mencegah submit default form
+            e.preventDefault(); 
 
-            // Ambil nilai input dari modal
+            
             const itemName = $("#Item").val();
             const itemQty = $("#Qty").val();
             const itemPrice = $("#Price").val();
             const itemId = $("#ItemId").val();
 
-            // Validasi input
+            
             if (!itemName || !itemQty || !itemPrice) {
                 alert("All fields are required!");
                 return;
             }
 
-            // Hitung total harga
+            
             const itemTotal = parseFloat(itemQty) * parseFloat(itemPrice);
 
-            // Cek apakah sedang dalam mode edit
+            
             const editingRow = $("#modalItem").data("editingRow");
             if (editingRow) {
-                // Update data pada baris yang sedang diedit
+                
                 editingRow.find("td:nth-child(2)").text(itemName);
                 editingRow.find("td:nth-child(3)").text(itemQty);
                 editingRow.find("td:nth-child(4)").text(itemPrice);
@@ -142,7 +142,7 @@
                 editingRow.find("td:nth-child(6)").text(itemId);
                 $("#modalItem").removeData("editingRow");
             } else {
-                // Tambahkan baris baru ke tabel
+                
                 const newRow = `
                     <tr>
                         <td></td>
@@ -159,72 +159,72 @@
                 $("#tblItem tbody").append(newRow);
             }
 
-            // Reset input di modal
+            
             $("#Item").val("");
             $("#Qty").val("");
             $("#Price").val("");
             $("#ItemId").val("");
 
-            // Tutup modal
+            
             $("#modalItem").modal("hide");
 
-            // Perbarui nomor urut
+            
             renumberTable();
         });
 
-        // Event handler untuk tombol Edit
+        
         $(document).on("click", ".btn-edit", function () {
             const row = $(this).closest("tr");
 
-            // Ambil data dari baris tabel
+            
             const itemId = row.find("td:nth-child(6)").text();
             const itemName = row.find("td:nth-child(2)").text();
             const itemQty = row.find("td:nth-child(3)").text();
             const itemPrice = row.find("td:nth-child(4)").text();
 
-            // Set data ke modal
+            
             $("#Item").val(itemName);
             $("#ItemId").val(itemId);
             $("#Qty").val(itemQty);
             $("#Price").val(itemPrice);
 
-            // Simpan referensi baris yang sedang diedit
+            
             $("#modalItem").data("editingRow", row);
 
-            // Tampilkan modal
+            
             $("#modalItem").modal("show");
         });
 
-        // Event handler untuk tombol Delete
+        /
         $(document).on("click", ".btn-delete", function () {
             const row = $(this).closest("tr");
-            row.remove(); // Hapus baris dari tabel
-            renumberTable(); // Perbarui nomor urut
+            row.remove(); 
+            renumberTable(); 
         });
 
-        // Fungsi untuk memperbarui nomor urut
+       
         function renumberTable() {
             $("#tblItem tbody tr").each(function (index) {
                 $(this).find("td:first-child").text(index + 1);
             });
         }
 
-        // Event handler untuk tombol Save
+       
         $("#btnSave").on("click", function () {
-            // Ambil data dari form
+            
             let orderId = $("input[name='SoOrderId']").val();
             let orderNo = $("input[name='OrderNo']").val();
             let orderDate = $("input[name='OrderDate']").val();
             let comCustomerId = $("select[name='ComCustomerId']").val();
             let address = $("textarea[name='Address']").val();
 
-            // Validasi input form
+           
             if (!orderDate || !comCustomerId) {
                 alert("Order Date and Customer are required.");
                 return;
             }
 
-            // Ambil data item dari tabel
+           
             let items = [];
             $("#tblItem tbody tr").each(function () {
                 
@@ -248,9 +248,9 @@
                 return;
             }
 
-            // Kirim data ke server
+          
             $.ajax({
-                url: '/Order/Update', // Ganti dengan endpoint Anda
+                url: '/Order/Update', 
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
@@ -263,7 +263,7 @@
                 }),
                 success: function (response) {
                     alert("Order saved successfully!");
-                    location.reload(); // Opsional: Reload halaman
+                    location.reload(); 
                 },
                 error: function (xhr) {
                     alert("Failed to save order: " + xhr.responseText);
