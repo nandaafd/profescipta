@@ -16,9 +16,18 @@ namespace Profescipta.Controllers
             _customerService = customerService;
             _orderService = orderService;
         }
+        [HttpPost]
+        public IActionResult Index(VMMasterSearchForm crit)
+        {
+            ViewBag.searchText = crit.searchText;
+            ViewBag.searchDate = crit.searchDate?.ToString("yyyy-MM-dd");
+            var model = _orderService.GetList(crit);
+            return View(model);
+        }
+        [HttpGet]
         public IActionResult Index()
         {
-            VMMasterSearchForm crit = new VMMasterSearchForm();
+            var crit = new VMMasterSearchForm();
             var model = _orderService.GetList(crit);
             return View(model);
         }

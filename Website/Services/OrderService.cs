@@ -1,6 +1,8 @@
-﻿using App.Domain;
+﻿using App.Data;
+using App.Domain;
 using App.Repository;
 using Entities.ViewModels;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -24,6 +26,7 @@ namespace Services
         private readonly IRepository<SoOrder> _order;
         private readonly IRepository<SoItem> _item;
         private readonly IRepository<ComCustomer> _cust;
+        private readonly EfDbContext _dbContext;
         public OrderService(
             IRepository<SoOrder> order, 
             IRepository<SoItem> item,
@@ -50,11 +53,11 @@ namespace Services
                        }).ToList();
             if (crit.searchDate != null)
             {
-                list.Where(w => w.OrderDate == crit.searchDate).ToList();
+                list = list.Where(w => w.OrderDate == crit.searchDate).ToList();
             }
             if (!crit.searchText.IsNullOrEmpty())
             {
-                list.Where(w => w.OrderNo.ToUpper().Contains(crit.searchText.ToUpper().Trim())).ToList();
+                list = list.Where(w => w.OrderNo.ToUpper().Contains(crit.searchText.ToUpper().Trim())).ToList();
             }
 
             return list;
@@ -71,156 +74,172 @@ namespace Services
         }
         public bool Store(VMOrderRequest request)
         {
-            try
+            using (IDbContextTransaction dbTran = _dbContext.Database.BeginTransaction())
             {
-                if (request != null && request.Items.Count > 0)
+                try
                 {
-                    SoOrder data = new SoOrder();
-                    data.OrderNo = "";
-                    data.OrderDate = request.OrderDate;
-                    data.Address = request.Address;
-                    data.ComCustomerId = Convert.ToInt32(request.ComCustomerId);
-                    var addData = _order.Add(data);
-
-                    data.OrderNo = $"ORD-00{addData.SoOrderId}-{DateTime.Today.ToString("ddMMyyyy")}";
-                    _order.Update(data);
-
-                    if (request.Items.Count > 0)
+                    if (request != null && request.Items.Count > 0)
                     {
-                        List<VMOrderItemDto> itemList = request.Items;
-                        foreach (VMOrderItemDto l in itemList)
+                        SoOrder data = new SoOrder();
+                        data.OrderNo = "";
+                        data.OrderDate = request.OrderDate;
+                        data.Address = request.Address;
+                        data.ComCustomerId = Convert.ToInt32(request.ComCustomerId);
+                        var addData = _order.Add(data);
+
+                        data.OrderNo = $"ORD-00{addData.SoOrderId}-{DateTime.Today.ToString("ddMMyyyy")}";
+                        _order.Update(data);
+
+                        if (request.Items.Count > 0)
                         {
-                            SoItem itemData = new SoItem();
-
-                            itemData.ItemName = l.Name;
-                            itemData.SoOrderId = addData.SoOrderId;
-                            itemData.Quantity = l.Qty;
-                            itemData.Price = Convert.ToInt32(l.Price);
-                            _item.Add(itemData);
-                        }
-
-                    }
-                    else
-                    {
-                        throw new Exception();
-                    }
-                    _order.SaveChangesAsync();
-                    _item.SaveChangesAsync();
-                }
-                else
-                {
-                    throw new Exception();
-                }
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-            
-            return true;
-        }
-        public bool Update(VMOrderRequest request)
-        {
-            try
-            {
-                if (request != null && request.Items.Count > 0)
-                {
-                    var existingOrder = _order.TableNoTracking.Where(w => w.SoOrderId == request.SoOrderId).FirstOrDefault();
-                    var order = new SoOrder()
-                    {
-                        SoOrderId = existingOrder.SoOrderId,
-                        OrderNo = existingOrder.OrderNo,
-                        OrderDate = request.OrderDate,
-                        ComCustomerId = Convert.ToInt32(request.ComCustomerId),
-                        Address = request.Address
-                    };
-                    _order.Update(order);
-                    if (request.Items.Count > 0)
-                    {
-                        List<VMOrderItemDto> itemList = request.Items;
-                        foreach (VMOrderItemDto l in itemList)
-                        {
-                            SoItem itemData = new SoItem();
-                            var existingItem = _item.TableNoTracking.Where(w => w.SoItemId == l.ItemId).FirstOrDefault();
-                            if (existingItem == null)
+                            List<VMOrderItemDto> itemList = request.Items;
+                            foreach (VMOrderItemDto l in itemList)
                             {
+                                SoItem itemData = new SoItem();
+
                                 itemData.ItemName = l.Name;
-                                itemData.SoOrderId = existingOrder.SoOrderId;
+                                itemData.SoOrderId = addData.SoOrderId;
                                 itemData.Quantity = l.Qty;
                                 itemData.Price = Convert.ToInt32(l.Price);
                                 _item.Add(itemData);
                             }
-                            else
-                            {
-                                itemData.SoItemId = l.ItemId ?? 0;
-                                itemData.ItemName = l.Name;
-                                itemData.SoOrderId = existingItem.SoOrderId;
-                                itemData.Quantity = l.Qty;
-                                itemData.Price = Convert.ToInt32(l.Price);
-                                _item.Update(itemData);
-                            }
-                        }
 
+                        }
+                        else
+                        {
+                            throw new Exception();
+                        }
+                        _order.SaveChangesAsync();
+                        _item.SaveChangesAsync();
+                        dbTran.CommitAsync();
                     }
                     else
                     {
+                        dbTran.RollbackAsync();
                         throw new Exception();
                     }
-                    _item.SaveChangesAsync();
-                    _order.SaveChangesAsync();
                 }
-                else
+                catch (Exception ex)
                 {
-                    throw new Exception();
+                    return false;
                 }
+
+                return true;
             }
-            catch (Exception ex)
-            {
-                return false;
-            }
-            
-            return true;
+                
         }
-        public bool Delete(int id)
+        public bool Update(VMOrderRequest request)
         {
-            try
+            using (IDbContextTransaction dbTran = _dbContext.Database.BeginTransaction())
             {
-                if (id != 0)
+                try
                 {
-                    var orderData = _order.TableNoTracking.Where(w => w.SoOrderId == id).FirstOrDefault();
-                    var itemData = _item.TableNoTracking.Where(w => w.SoOrderId == id).ToList();
-                    if (orderData != null)
+                    if (request != null && request.Items.Count > 0)
                     {
-                        _order.Delete(orderData);
-                        if (itemData.Count > 0)
+                        var existingOrder = _order.TableNoTracking.Where(w => w.SoOrderId == request.SoOrderId).FirstOrDefault();
+                        var order = new SoOrder()
                         {
-                            foreach (var item in itemData)
+                            SoOrderId = existingOrder.SoOrderId,
+                            OrderNo = existingOrder.OrderNo,
+                            OrderDate = request.OrderDate,
+                            ComCustomerId = Convert.ToInt32(request.ComCustomerId),
+                            Address = request.Address
+                        };
+                        _order.Update(order);
+                        if (request.Items.Count > 0)
+                        {
+                            List<VMOrderItemDto> itemList = request.Items;
+                            foreach (VMOrderItemDto l in itemList)
                             {
-                                _item.Delete(item);
+                                SoItem itemData = new SoItem();
+                                var existingItem = _item.TableNoTracking.Where(w => w.SoItemId == l.ItemId).FirstOrDefault();
+                                if (existingItem == null)
+                                {
+                                    itemData.ItemName = l.Name;
+                                    itemData.SoOrderId = existingOrder.SoOrderId;
+                                    itemData.Quantity = l.Qty;
+                                    itemData.Price = Convert.ToInt32(l.Price);
+                                    _item.Add(itemData);
+                                }
+                                else
+                                {
+                                    itemData.SoItemId = l.ItemId ?? 0;
+                                    itemData.ItemName = l.Name;
+                                    itemData.SoOrderId = existingItem.SoOrderId;
+                                    itemData.Quantity = l.Qty;
+                                    itemData.Price = Convert.ToInt32(l.Price);
+                                    _item.Update(itemData);
+                                }
                             }
                         }
                         else
                         {
                             throw new Exception();
                         }
+                        _item.SaveChangesAsync();
+                        _order.SaveChangesAsync();
+                        dbTran.CommitAsync();
                     }
                     else
                     {
                         throw new Exception();
                     }
-                    _order.SaveChangesAsync();
-                    _item.SaveChangesAsync();   
                 }
-                else
+                catch (Exception ex)
                 {
-                    throw new Exception();
+                    dbTran.RollbackAsync();
+                    return false;
                 }
+
+                return true;
             }
-            catch (Exception ex)
+        }
+        public bool Delete(int id)
+        {
+            using (IDbContextTransaction dbTran = _dbContext.Database.BeginTransaction())
             {
-                return false;
+                try
+                {
+                    if (id != 0)
+                    {
+                        var orderData = _order.TableNoTracking.Where(w => w.SoOrderId == id).FirstOrDefault();
+                        var itemData = _item.TableNoTracking.Where(w => w.SoOrderId == id).ToList();
+                        if (orderData != null)
+                        {
+                            _order.Delete(orderData);
+                            if (itemData.Count > 0)
+                            {
+                                foreach (var item in itemData)
+                                {
+                                    _item.Delete(item);
+                                }
+                            }
+                            else
+                            {
+                                throw new Exception();
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception();
+                        }
+                        _order.SaveChangesAsync();
+                        _item.SaveChangesAsync();
+                        dbTran.CommitAsync();
+                    }
+                    else
+                    {
+                        throw new Exception();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    dbTran.RollbackAsync();
+                    return false;
+                }
+                return true;
             }
-            return true;
+                
         }
     }
 }
