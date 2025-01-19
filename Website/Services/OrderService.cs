@@ -88,6 +88,7 @@ namespace Services
                     foreach(VMOrderItemDto l in itemList)
                     {
                         SoItem itemData = new SoItem();
+                        
                         itemData.ItemName = l.Name;
                         itemData.SoOrderId = addData.SoOrderId;
                         itemData.Quantity = l.Qty;
@@ -109,10 +110,11 @@ namespace Services
         {
             if (request != null && request.Items.Count > 0)
             {
+                var existingOrder = _order.TableNoTracking.Where(w => w.SoOrderId == request.SoOrderId).FirstOrDefault();
                 var order = new SoOrder()
                 {
-                    SoOrderId = request.SoOrderId ?? 0,
-                    OrderNo = request.OrderNo,
+                    SoOrderId = existingOrder.SoOrderId,
+                    OrderNo = existingOrder.OrderNo,
                     OrderDate = request.OrderDate,
                     ComCustomerId = Convert.ToInt32(request.ComCustomerId),
                     Address = request.Address
@@ -124,11 +126,24 @@ namespace Services
                     foreach (VMOrderItemDto l in itemList)
                     {
                         SoItem itemData = new SoItem();
-                        itemData.ItemName = l.Name;
-                        itemData.SoOrderId = l.ItemId ?? 0;
-                        itemData.Quantity = l.Qty;
-                        itemData.Price = Convert.ToInt32(l.Price);
-                        _item.Update(itemData);
+                        var existingItem = _item.TableNoTracking.Where(w => w.SoItemId == l.ItemId).FirstOrDefault();
+                        if (existingItem == null)
+                        {
+                            itemData.ItemName = l.Name;
+                            itemData.SoOrderId = existingOrder.SoOrderId;
+                            itemData.Quantity = l.Qty;
+                            itemData.Price = Convert.ToInt32(l.Price);
+                            _item.Add(itemData);
+                        }
+                        else
+                        {
+                            itemData.SoItemId = l.ItemId ?? 0;
+                            itemData.ItemName = l.Name;
+                            itemData.SoOrderId = existingItem.SoOrderId;
+                            itemData.Quantity = l.Qty;
+                            itemData.Price = Convert.ToInt32(l.Price);
+                            _item.Update(itemData);
+                        }
                     }
 
                 }

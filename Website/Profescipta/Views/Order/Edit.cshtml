@@ -68,6 +68,7 @@
                         <td>@l.ItemName</td>
                         <td>@l.Quantity</td>
                         <td>@l.Price</td>
+                        <td></td>
                         <td>@l.SoItemId</td>
                     </tr>
                 }
@@ -112,65 +113,56 @@
 
 <script>
     $(document).ready(function () {
-        
-        $("#modalItem button[type='submit']").on("click", function (e) {
-            e.preventDefault(); 
 
-            
-            const itemName = $("#Item").val();
-            const itemQty = $("#Qty").val();
-            const itemPrice = $("#Price").val();
-            const itemId = $("#ItemId").val();
+            $("#modalItem button[type='submit']").on("click", function (e) {
+        e.preventDefault();
 
-            
-            if (!itemName || !itemQty || !itemPrice) {
-                alert("All fields are required!");
-                return;
-            }
+        const itemName = $("#Item").val();
+        const itemQty = $("#Qty").val();
+        const itemPrice = $("#Price").val();
+        const itemId = $("#ItemId").val();
 
-            
-            const itemTotal = parseFloat(itemQty) * parseFloat(itemPrice);
+        if (!itemName || !itemQty || !itemPrice) {
+            alert("All fields are required!");
+            return;
+        }
 
-            
-            const editingRow = $("#modalItem").data("editingRow");
-            if (editingRow) {
-                
-                editingRow.find("td:nth-child(2)").text(itemName);
-                editingRow.find("td:nth-child(3)").text(itemQty);
-                editingRow.find("td:nth-child(4)").text(itemPrice);
-                editingRow.find("td:nth-child(5)").text(itemTotal.toFixed(2));
-                editingRow.find("td:nth-child(6)").text(itemId);
-                $("#modalItem").removeData("editingRow");
-            } else {
-                
-                const newRow = `
-                    <tr>
-                        <td></td>
-                        <td>${itemName}</td>
-                        <td>${itemQty}</td>
-                        <td>${itemPrice}</td>
-                        <td>${itemTotal.toFixed(2)}</td>
-                        <td>
-                            <button type="button" class="btn btn-warning btn-sm btn-edit">Edit</button>
-                            <button type="button" class="btn btn-danger btn-sm btn-delete">Delete</button>
-                        </td>
-                    </tr>
-                `;
-                $("#tblItem tbody").append(newRow);
-            }
+        const itemTotal = parseFloat(itemQty) * parseFloat(itemPrice);
 
-            
-            $("#Item").val("");
-            $("#Qty").val("");
-            $("#Price").val("");
-            $("#ItemId").val("");
+        const editingRow = $("#modalItem").data("editingRow");
+        if (editingRow) {
+            editingRow.find("td:nth-child(2)").text(itemName);
+            editingRow.find("td:nth-child(3)").text(itemQty);
+            editingRow.find("td:nth-child(4)").text(itemPrice);
+            editingRow.find("td:nth-child(5)").text(itemTotal.toFixed(2));
+            editingRow.find("input[name='ItemId']").val(itemId);
+            $("#modalItem").removeData("editingRow");
+        } else {
+            const newRow = `
+                <tr>
+                    <td></td>
+                    <td>${itemName}</td>
+                    <td>${itemQty}</td>
+                    <td>${itemPrice}</td>
+                    <td>${itemTotal.toFixed(2)}</td>
+                    <td>
+                        <input type="hidden" name="ItemId" value="${itemId}" />
+                        <button type="button" class="btn btn-warning btn-sm btn-edit">Edit</button>
+                        <button type="button" class="btn btn-danger btn-sm btn-delete">Delete</button>
+                    </td>
+                </tr>
+            `;
+            $("#tblItem tbody").append(newRow);
+        }
 
-            
-            $("#modalItem").modal("hide");
+        $("#Item").val("");
+        $("#Qty").val("");
+        $("#Price").val("");
+        $("#ItemId").val("");
+        $("#modalItem").modal("hide");
+        renumberTable();
+    });
 
-            
-            renumberTable();
-        });
 
         
         $(document).on("click", ".btn-edit", function () {
@@ -182,6 +174,7 @@
             const itemQty = row.find("td:nth-child(3)").text();
             const itemPrice = row.find("td:nth-child(4)").text();
 
+            console.log(itemId + "id")
             
             $("#Item").val(itemName);
             $("#ItemId").val(itemId);
@@ -195,7 +188,7 @@
             $("#modalItem").modal("show");
         });
 
-        /
+        
         $(document).on("click", ".btn-delete", function () {
             const row = $(this).closest("tr");
             row.remove(); 

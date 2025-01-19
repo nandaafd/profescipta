@@ -22,6 +22,6 @@ namespace Entities.ViewModels
         public string Name { get; set; }
         public int Qty { get; set; }
         public decimal Price { get; set; }
-        public decimal Total { get; set; }
+        //public decimal Total { get; set; }
     }
 }
