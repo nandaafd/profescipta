@@ -44,9 +44,9 @@
     </div>
     <div>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalItem">
-            Add Item
+            <i class="bi bi-bag-plus"></i> Add Item
         </button>
-        <button class="btn btn-success" id="btnSave">Save</button>
+        <button class="btn btn-success" id="btnSave"><i class="bi bi-floppy"></i> Save</button>
         <table class="table" id="tblItem">
             <thead>
                 <tr>
@@ -63,8 +63,8 @@
                 {
                     <tr>
                         <td>
-                            <button type="button" class="btn btn-warning btn-sm btn-edit">Edit</button>
-                            <button type="button" class="btn btn-danger btn-sm btn-delete">Delete</button>
+                            <button type="button" class="btn btn-warning btn-sm btn-edit"><i class="bi bi-pencil-square"></i></button>
+                            <button type="button" class="btn btn-danger btn-sm btn-delete"><i class="bi bi-trash"></i></button>
                         </td>
                         <td>@l.ItemName</td>
                         <td>@l.Quantity</td>
@@ -133,8 +133,8 @@
             if (editingRow) {
                 editingRow.html(`
                     <td>
-                        <button type="button" class="btn btn-warning btn-sm btn-edit">Edit</button>
-                        <button type="button" class="btn btn-danger btn-sm btn-delete">Delete</button>
+                        <button type="button" class="btn btn-warning btn-sm btn-edit"><i class="bi bi-pencil-square"></i></button>
+                        <button type="button" class="btn btn-danger btn-sm btn-delete"><i class="bi bi-trash"></i></button>
                     </td>
                     <td>${itemName}</td>
                     <td>${itemQty}</td>
@@ -147,8 +147,8 @@
                 const newRow = `
                     <tr>
                         <td>
-                            <button type="button" class="btn btn-warning btn-sm btn-edit">Edit</button>
-                            <button type="button" class="btn btn-danger btn-sm btn-delete">Delete</button>
+                            <button type="button" class="btn btn-warning btn-sm btn-edit"><i class="bi bi-pencil-square"></i></button>
+                            <button type="button" class="btn btn-danger btn-sm btn-delete"><i class="bi bi-trash"></i></button>
                         </td>
                         <td>${itemName}</td>
                         <td>${itemQty}</td>

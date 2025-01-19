@@ -3,7 +3,7 @@
 }
 <div>
     <div>
-        <a asp-action="Add" asp-controller="Order" class="btn btn-primary">Add Sales Order</a>
+        <a asp-action="Add" asp-controller="Order" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Sales Order</a>
         <table class="table">
             <thead>
                 <tr>
@@ -20,8 +20,8 @@
                     {
                         <tr>
                             <th scope="row">
-                                <a class="btn btn-success" asp-action="Edit" asp-controller="Order" asp-route-id="@item.SoOrderId">Edit</a>
-                                <a class="btn btn-danger" asp-action="Delete" asp-controller="Order" asp-route-id="@item.SoOrderId">delete</a>
+                                <a class="btn btn-success" asp-action="Edit" asp-controller="Order" asp-route-id="@item.SoOrderId"><i class="bi bi-pencil-square"></i></a>
+                                <a class="btn btn-danger" asp-action="Delete" asp-controller="Order" asp-route-id="@item.SoOrderId" onclick="confirm('are you sure?')"><i class="bi bi-trash"></i></a>
                             </th>
                             <td>@item.OrderNo</td>
                             <td>@item.OrderDate.ToString("dd-MMM-yyyy")</td>

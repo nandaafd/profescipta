@@ -45,7 +45,7 @@ namespace Profescipta.Controllers
                 return BadRequest("Invalid data.");
             }
             var process = _orderService.Store(request);
-            if (process == null)
+            if (!process)
             {
                 return BadRequest("Create data failed.");
             }
@@ -62,13 +62,25 @@ namespace Profescipta.Controllers
                 return BadRequest("Invalid data.");
             }
             var process = _orderService.Update(request);
-            if (process == null)
+            if (!process)
             {
                 return BadRequest("Update data failed.");
             }
             else
             {
                 return RedirectToAction("Index");
+            }
+        }
+        public IActionResult Delete(int id)
+        {
+            var res = _orderService.Delete(id);
+            if (res)
+            {
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                return BadRequest("Delete data failed.");
             }
         }
 

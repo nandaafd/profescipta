@@ -12,7 +12,7 @@
             </div>
             <div class="input-group mb-3">
                 <label class="form-label col-lg-4 col-xs-12">Order Date</label>
-                <input type="date" class="form-control col-lg-8 col-xs-12" name="OrderDate" value="@Model.OrderDate" />
+                <input type="date" class="form-control col-lg-8 col-xs-12" name="OrderDate" value="@(DateTime.Today.ToString("yyyy-MM-dd"))" />
             </div>
         </div>
         <div class="col-lg-6 col-md-6 col-sm-12">
@@ -34,9 +34,9 @@
     </div>
     <div>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalItem">
-            Add Item
+            <i class="bi bi-bag-plus"></i> Add Item
         </button>
-        <button class="btn btn-success" id="btnSave">Save</button>
+        <button class="btn btn-success" id="btnSave"><i class="bi bi-floppy"></i> Save</button>
         <table class="table" id="tblItem">
             <thead>
                 <tr>
@@ -119,8 +119,8 @@
                         <td>${itemPrice}</td>
                         <td>${itemTotal.toFixed(2)}</td>
                         <td>
-                            <button type="button" class="btn btn-warning btn-sm btn-edit">Edit</button>
-                            <button type="button" class="btn btn-danger btn-sm btn-delete">Delete</button>
+                            <button type="button" class="btn btn-warning btn-sm btn-edit"><i class="bi bi-pencil-square"></i></button>
+                            <button type="button" class="btn btn-danger btn-sm btn-delete"><i class="bi bi-trash"></i></button>
                         </td>
                     </tr>
                 `;
