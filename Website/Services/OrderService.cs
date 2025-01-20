@@ -151,6 +151,7 @@ namespace Services
                         if (request.Items.Count > 0)
                         {
                             List<VMOrderItemDto> itemList = request.Items;
+                            _item.ExecuteSqlCommand($"delete from SO_ITEM where SO_ORDER_ID = {existingOrder.SoOrderId}");
                             foreach (VMOrderItemDto l in itemList)
                             {
                                 SoItem itemData = new SoItem();

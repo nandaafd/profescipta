@@ -170,6 +170,7 @@
             //renumberTable();
         });
 
+        let items = [];
         $(document).on("click", ".btn-edit", function () {
             const row = $(this).closest("tr");
 
@@ -199,7 +200,9 @@
                 $(this).find("td:first-child").text(index + 1);
             });
         }
+        $("#btn-delete").on("click", function(){
 
+        });
         $("#btnSave").on("click", function () {
 
             let orderId = $("input[name='SoOrderId']").val();
@@ -215,7 +218,6 @@
             }
 
 
-            let items = [];
             $("#tblItem tbody tr").each(function () {
 
                 const itemName = $(this).find("td:nth-child(2)").text();
